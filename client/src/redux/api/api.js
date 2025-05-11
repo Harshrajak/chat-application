@@ -7,6 +7,53 @@ const api = createApi({
   tagTypes: ["Chat", "User", "Message"],
 
   endpoints: (builder) => ({
+    adminLogin: builder.mutation({
+      query: (secretKey) => ({
+        url: "auth/admin-login",
+        method: "POST",
+        body: { secretKey },
+        credentials: "include",
+      }),
+      invalidatesTags: ["Auth"],
+    }),
+    
+    login: builder.mutation({
+      query: (credentials) => ({
+        url: "auth/login",
+        method: "POST",
+        body: credentials,
+        credentials: "include",
+      }),
+      invalidatesTags: ["Auth", "User"],
+    }),
+
+    register: builder.mutation({
+      query: (userData) => ({
+        url: "auth/register",
+        method: "POST",
+        body: userData,
+        credentials: "include",
+      }),
+      invalidatesTags: ["Auth", "User"],
+    }),
+
+    logout: builder.mutation({
+      query: () => ({
+        url: "auth/logout",
+        method: "GET",
+        credentials: "include",
+      }),
+      invalidatesTags: ["Auth", "User"],
+    }),
+
+    currentUser: builder.query({
+      query: () => ({
+        url: "auth/me",
+        credentials: "include",
+      }),
+      providesTags: ["User"],
+    }),
+
     myChats: builder.query({
       query: () => ({
         url: "chat/my",
@@ -162,8 +209,12 @@ const api = createApi({
   }),
 });
 
-export default api;
 export const {
+  useAdminLoginMutation,
+  useLoginMutation,
+  useRegisterMutation,
+  useLogoutMutation,
+  useCurrentUserQuery,
   useMyChatsQuery,
   useLazySearchUserQuery,
   useSendFriendRequestMutation,
@@ -181,3 +232,5 @@ export const {
   useDeleteChatMutation,
   useLeaveGroupMutation,
 } = api;
+
+export default api;

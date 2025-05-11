@@ -1,31 +1,30 @@
 import jwt from "jsonwebtoken";
+import { User } from "../models/User.js";
 import { ErrorHandler } from "../utils/utility.js";
-import { adminSecretKey } from "../app.js";
 import { TryCatch } from "./error.js";
-import { CHATTU_TOKEN } from "../constants/config.js";
-import { User } from "../models/user.js";
+import { JWT_SECRET, ADMIN_SECRET_KEY, CHATTER_BOX_ADMIN_TOKEN, CHATTER_BOX_TOKEN } from "../constants/index.js";
 
 const isAuthenticated = TryCatch((req, res, next) => {
-  const token = req.cookies[CHATTU_TOKEN];
+  const token = req.cookies[CHATTER_BOX_TOKEN];
   if (!token)
     return next(new ErrorHandler("Please login to access this route", 401));
 
-  const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+  const decodedData = jwt.verify(token, JWT_SECRET);
 
   req.user = decodedData._id;
 
   next();
 });
 
-const adminOnly = (req, res, next) => {
-  const token = req.cookies["chattu-admin-token"];
+const isAdmin = (req, res, next) => {
+  const token = req.cookies[CHATTER_BOX_ADMIN_TOKEN];
 
   if (!token)
     return next(new ErrorHandler("Only Admin can access this route", 401));
 
-  const secretKey = jwt.verify(token, process.env.JWT_SECRET);
+  const secretKey = jwt.verify(token, JWT_SECRET);
 
-  const isMatched = secretKey === adminSecretKey;
+  const isMatched = secretKey === ADMIN_SECRET_KEY;
 
   if (!isMatched)
     return next(new ErrorHandler("Only Admin can access this route", 401));
@@ -37,12 +36,12 @@ const socketAuthenticator = async (err, socket, next) => {
   try {
     if (err) return next(err);
 
-    const authToken = socket.request.cookies[CHATTU_TOKEN];
+    const authToken = socket.request.cookies[CHATTER_BOX_TOKEN];
 
     if (!authToken)
       return next(new ErrorHandler("Please login to access this route", 401));
 
-    const decodedData = jwt.verify(authToken, process.env.JWT_SECRET);
+    const decodedData = jwt.verify(authToken, JWT_SECRET);
 
     const user = await User.findById(decodedData._id);
 
@@ -58,4 +57,4 @@ const socketAuthenticator = async (err, socket, next) => {
   }
 };
 
-export { isAuthenticated, adminOnly, socketAuthenticator };
+export { isAuthenticated, isAdmin, socketAuthenticator };

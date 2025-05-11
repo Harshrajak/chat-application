@@ -62,7 +62,7 @@ const Header = () => {
 
   const logoutHandler = async () => {
     try {
-      const { data } = await axios.get(`${server}/api/v1/user/logout`, {
+      const { data } = await axios.get(`${server}/api/v1/auth/logout`, {
         withCredentials: true,
       });
       dispatch(userNotExists());
@@ -88,7 +88,7 @@ const Header = () => {
                 display: { xs: "none", sm: "block" },
               }}
             >
-              Chattu
+              Chatter Box
             </Typography>
 
             <Box

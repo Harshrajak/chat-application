@@ -1,20 +1,11 @@
+import { Chat } from "../models/Chat.js";
+import { User } from "../models/User.js";
+import { Message } from "../models/Message.js";
 import { TryCatch } from "../middlewares/error.js";
 import { ErrorHandler } from "../utils/utility.js";
-import { Chat } from "../models/chat.js";
-import {
-  deletFilesFromCloudinary,
-  emitEvent,
-  uploadFilesToCloudinary,
-} from "../utils/features.js";
-import {
-  ALERT,
-  NEW_MESSAGE,
-  NEW_MESSAGE_ALERT,
-  REFETCH_CHATS,
-} from "../constants/events.js";
+import { deletFilesFromCloudinary, emitEvent, uploadFilesToCloudinary } from "../utils/features.js";
 import { getOtherMember } from "../lib/helper.js";
-import { User } from "../models/user.js";
-import { Message } from "../models/message.js";
+import { EVENTS } from "../socket/events.js";
 
 const newGroupChat = TryCatch(async (req, res, next) => {
   const { name, members } = req.body;
@@ -28,8 +19,8 @@ const newGroupChat = TryCatch(async (req, res, next) => {
     members: allMembers,
   });
 
-  emitEvent(req, ALERT, allMembers, `Welcome to ${name} group`);
-  emitEvent(req, REFETCH_CHATS, members);
+  emitEvent(req, EVENTS.ALERT, allMembers, `Welcome to ${name} group`);
+  emitEvent(req, EVENTS.REFETCH_CHATS, members);
 
   return res.status(201).json({
     success: true,
@@ -120,12 +111,12 @@ const addMembers = TryCatch(async (req, res, next) => {
 
   emitEvent(
     req,
-    ALERT,
+    EVENTS.ALERT,
     chat.members,
     `${allUsersName} has been added in the group`
   );
 
-  emitEvent(req, REFETCH_CHATS, chat.members);
+  emitEvent(req, EVENTS.REFETCH_CHATS, chat.members);
 
   return res.status(200).json({
     success: true,
@@ -160,12 +151,12 @@ const removeMember = TryCatch(async (req, res, next) => {
 
   await chat.save();
 
-  emitEvent(req, ALERT, chat.members, {
+  emitEvent(req, EVENTS.ALERT, chat.members, {
     message: `${userThatWillBeRemoved.name} has been removed from the group`,
     chatId,
   });
 
-  emitEvent(req, REFETCH_CHATS, allChatMembers);
+  emitEvent(req, EVENTS.REFETCH_CHATS, allChatMembers);
 
   return res.status(200).json({
     success: true,
@@ -203,7 +194,7 @@ const leaveGroup = TryCatch(async (req, res, next) => {
     chat.save(),
   ]);
 
-  emitEvent(req, ALERT, chat.members, {
+  emitEvent(req, EVENTS.ALERT, chat.members, {
     chatId,
     message: `User ${user.name} has left the group`,
   });
@@ -255,12 +246,12 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 
   const message = await Message.create(messageForDB);
 
-  emitEvent(req, NEW_MESSAGE, chat.members, {
+  emitEvent(req, EVENTS.NEW_MESSAGE, chat.members, {
     message: messageForRealTime,
     chatId,
   });
 
-  emitEvent(req, NEW_MESSAGE_ALERT, chat.members, { chatId });
+  emitEvent(req, EVENTS.NEW_MESSAGE_ALERT, chat.members, { chatId });
 
   return res.status(200).json({
     success: true,
@@ -317,7 +308,7 @@ const renameGroup = TryCatch(async (req, res, next) => {
 
   await chat.save();
 
-  emitEvent(req, REFETCH_CHATS, chat.members);
+  emitEvent(req, EVENTS.REFETCH_CHATS, chat.members);
 
   return res.status(200).json({
     success: true,
@@ -364,7 +355,7 @@ const deleteChat = TryCatch(async (req, res, next) => {
     Message.deleteMany({ chat: chatId }),
   ]);
 
-  emitEvent(req, REFETCH_CHATS, members);
+  emitEvent(req, EVENTS.REFETCH_CHATS, members);
 
   return res.status(200).json({
     success: true,

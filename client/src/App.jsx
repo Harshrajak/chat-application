@@ -29,10 +29,9 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    axios
-      .get(`${server}/api/v1/user/me`, { withCredentials: true })
+    axios.get(`${server}/api/v1/auth/me`, { withCredentials: true })
       .then(({ data }) => dispatch(userExists(data.user)))
-      .catch((err) => dispatch(userNotExists()));
+      .catch(() => dispatch(userNotExists()));
   }, [dispatch]);
 
   return loader ? (
