@@ -15,7 +15,7 @@ export const setupSocket = (io) => {
     });
   });
 
-  io.on("connection", (socket) => {
+  io.on(EVENTS.CONNECTION, (socket) => {
     const user = socket.user;
     userSocketIDs.set(user._id.toString(), socket.id);
 
@@ -65,7 +65,7 @@ export const setupSocket = (io) => {
       io.to(getSockets(members)).emit(EVENTS.ONLINE_USERS, Array.from(onlineUsers));
     });
 
-    socket.on("disconnect", () => {
+    socket.on(EVENTS.DISCONNECT, () => {
       userSocketIDs.delete(user._id.toString());
       onlineUsers.delete(user._id.toString());
       socket.broadcast.emit(EVENTS.ONLINE_USERS, Array.from(onlineUsers));
